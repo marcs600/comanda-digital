@@ -481,25 +481,32 @@
 
         iniciar();
 
-// === INTEGRAÇÃO COM GOOGLE PLANILHAS ===
-const LINK_PLANILHA = "https://docs.google.com/spreadsheets/d/1YPGWYUb9No5_lQ4JJi83s8FQr02aRSF0nIYlZjD6TnA/edit?usp=drivesdk";
+// === SALVA PEDIDOS NA PLANILHA ===
+const LINK_API_PLANILHA = "https://script.google.com/macros/s/AKfycbwlnAzMnaunGimN5eZQ6-a_P6ZOHggE3PTU7XoQkC_vQYyKvdQK94USY2wSSOfjbuDycw/exec";
 
 async function salvarNaPlanilha(){
-    try {
-        comandas.forEach(comanda => {
-            if(comanda.pratos.length > 0 || comanda.porcoes.length > 0){
-                let textoPratos = comanda.pratos.map(p => `Prato ${p.numero}: ${p.itens.map(i=>i.nome).join(', ')}`).join(' | ');
-                let textoPorcoes = comanda.porcoes.map(p => p.nome).join(', ');
-                let data = new Date().toLocaleString('pt-BR');
-                
-                // Salva também no armazenamento rápido
-                localStorage.setItem('comandasSalvas', JSON.stringify(comandas));
-            }
-        });
-    } catch(e) {}
+    comandas.forEach(comanda => {
+        if(comanda.pratos.length > 0 || comanda.porcoes.length > 0){
+            let textoPratos = comanda.pratos.map(p => p.itens.map(i=>i.nome).join(', ')).join(' | ');
+            let textoPorcoes = comanda.porcoes.map(p => p.nome).join(', ');
+            let data = new Date().toLocaleString('pt-BR');
+
+            fetch(LINK_API_PLANILHA, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    mesa: comanda.id,
+                    pratos: textoPratos,
+                    porcoes: textoPorcoes,
+                    data: data
+                })
+            }).catch(erro => console.log("Erro:", erro));
+        }
+    });
+    localStorage.setItem('comandasSalvas', JSON.stringify(comandas));
 }
 
-// SALVA AUTOMATICAMENTE
+// SALVA AUTOMATICAMENTE EM TUDO
 const _add = adicionarComanda;
 adicionarComanda = function(a,b,c){ _add(a,b,c); salvarNaPlanilha(); };
 
