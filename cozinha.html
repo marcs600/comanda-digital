@@ -12,10 +12,10 @@
         .mesa { font-weight:bold; font-size:18px; color:#212529; margin-bottom:10px; }
         .prato { margin-bottom:10px; }
         .nome-prato { font-weight:bold; color:#495057; margin-bottom:4px; }
-        .porcoes { margin-top:10px; padding-top:8px; border-top:1px solid #DEE2E6; }
-        .titulo-porcoes { font-weight:bold; color:#495057; margin-bottom:4px; }
+        .porcoes { margin-top:12px; padding-top:10px; border-top:2px dashed #DEE2E6; }
+        .titulo-porcoes { font-weight:bold; color:#495057; margin-bottom:6px; font-size:15px; }
         .item { padding:2px 0 2px 15px; color:#212529; }
-        .btn-pronto { padding:8px 16px; background:#212529; color:white; border:none; border-radius:6px; cursor:pointer; margin-top:8px; }
+        .btn-pronto { padding:8px 16px; background:#212529; color:white; border:none; border-radius:6px; cursor:pointer; margin-top:10px; font-weight:bold; }
     </style>
 </head>
 <body>
@@ -27,21 +27,28 @@
             const dados = JSON.parse(localStorage.getItem('comandasSalvas') || '[]');
             const lista = document.getElementById('lista');
             lista.innerHTML = '';
+
             dados.forEach(comanda => {
-                if(comanda.pratos.length === 0 && comanda.porcoes.length ===0) return;
+                // Mostra só se tiver pratos OU porções
+                if(comanda.pratos.length === 0 && comanda.porcoes.length === 0) return;
+
                 lista.innerHTML += `<div class="pedido"><div class="mesa">🪑 Mesa ${comanda.id}</div>`;
                 
+                // Mostra os pratos normais
                 comanda.pratos.forEach(prato => {
                     lista.innerHTML += `<div class="prato"><div class="nome-prato">Prato ${prato.numero}</div>`;
                     prato.itens.forEach(item => lista.innerHTML += `<div class="item">• ${item.nome}</div>`);
                     lista.innerHTML += `</div>`;
                 });
 
-                if(comanda.porcoes.length>0){
-                    lista.innerHTML += `<div class="porcoes"><div class="titulo-porcoes">🍽️ Porções</div>`;
+                // Mostra Porções SEPARADO, com linha diferente
+                if(comanda.porcoes.length > 0){
+                    lista.innerHTML += `<div class="porcoes"><div class="titulo-porcoes">🍽️ PORÇÕES</div>`;
                     comanda.porcoes.forEach(item => lista.innerHTML += `<div class="item">• ${item.nome}</div>`);
                     lista.innerHTML += `</div>`;
                 }
+
+                // BEBIDAS NÃO APARECEM DE JEITO NENHUM
 
                 lista.innerHTML += `<button class="btn-pronto" onclick="limparMesa(${comanda.id})">✅ Pedido Pronto</button></div>`;
             });
@@ -50,7 +57,13 @@
         function limparMesa(id){
             let d = JSON.parse(localStorage.getItem('comandasSalvas')||'[]');
             const i = d.findIndex(c=>c.id===id);
-            if(i!==-1){ d[i].pratos=[]; d[i].porcoes=[]; localStorage.setItem('comandasSalvas',JSON.stringify(d)); atualizar(); }
+            if(i!==-1){ 
+                d[i].pratos = []; 
+                d[i].porcoes = []; 
+                d[i].bebidas = [];
+                localStorage.setItem('comandasSalvas',JSON.stringify(d)); 
+                atualizar(); 
+            }
         }
 
         setInterval(atualizar, 1000);
