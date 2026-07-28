@@ -480,6 +480,27 @@
         function fecharComanda(){document.getElementById('modal-comanda').style.display='none';}
 
         iniciar();
+
+        // ✅ Função para enviar os pedidos para a cozinha
+function salvarParaCozinha(){
+    localStorage.setItem('comandasSalvas', JSON.stringify(comandas));
+}
+
+// Salva automaticamente toda vez que você adicionar/remover algo
+const originalAdicionar = adicionarComanda;
+adicionarComanda = function(a,b,c){ originalAdicionar(a,b,c); salvarParaCozinha(); };
+
+const originalRemover = removerUmItem;
+removerUmItem = function(a,b,c){ originalRemover(a,b,c); salvarParaCozinha(); };
+
+const originalExcluirPrato = excluirPrato;
+excluirPrato = function(a){ originalExcluirPrato(a); salvarParaCozinha(); };
+
+const originalNovaComanda = criarNovaComanda;
+criarNovaComanda = function(){ originalNovaComanda(); salvarParaCozinha(); };
+
+salvarParaCozinha();
+
     </script>
 </body>
 </html>
