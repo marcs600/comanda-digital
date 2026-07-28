@@ -481,63 +481,54 @@
 
         iniciar();
 
-// === NUVEM DO GITHUB GIST ===
-const LINK_NUVEM = "https://gist.githubusercontent.com/marcs600/15c45bc9cfad612bf01307b69d5ba465/raw/8950b0e30e76a9502b823c21b6f6eaa6d2fa8e54/dados-comanda.json";
-const LINK_EDITAR = "https://api.github.com/gists/15c45bc9cfad612bf01307b69d5ba465";
-
-// SALVA DIRETO NA NUVEM
-async function salvarNaNuvem(){
-    try {
-        await fetch(LINK_EDITAR, {
-            method: "PATCH",
-            headers: {
-                "Authorization": "token ghp_ColoqueSeuTokenAqui",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                files: {
-                    "dados-comanda.json": {
-                        content: JSON.stringify(comandas, null, 2)
-                    }
+// === COMPARTILHA SEM LOCALSTORAGE, SEM TOKEN ===
+async function salvarParaCozinha(){
+    // Salva os dados num arquivo que os dois acessam
+    await fetch("https://api.github.com/gists/15c45bc9cfad612bf01307b69d5ba465", {
+        method: "PATCH",
+        headers: {
+            "Accept": "application/vnd.github+json"
+        },
+        body: JSON.stringify({
+            files: {
+                "dados-comanda.json": {
+                    content: JSON.stringify(comandas, null, 2)
                 }
-            })
-        });
-    } catch(e) {
-        console.log("Aviso:", e);
-    }
+            }
+        })
+    }).catch(()=>{});
 }
 
-// CARREGA OS PEDIDOS AO ABRIR
-async function carregarDaNuvem(){
-    try {
-        const res = await fetch(LINK_NUVEM);
-        if(res.ok){
-            comandas = await res.json();
-            atualizarAbas();
-            atualizarPratos();
-            atualizarComanda();
-        }
-    } catch(e) {}
+async function carregarDados(){
+    await fetch("https://gist.githubusercontent.com/marcs600/15c45bc9cfad612bf01307b69d5ba465/raw/8950b0e30e76a9502b823c21b6f6eaa6d2fa8e54/dados-comanda.json")
+    .then(r=>r.json())
+    .then(d=>{
+        comandas = d;
+        atualizarAbas();
+        atualizarPratos();
+        atualizarComanda();
+    }).catch(()=>{});
 }
 
-// SALVA EM TODA ALTERAÇÃO
+// Salva automaticamente
 const _add = adicionarComanda;
-adicionarComanda = function(a,b,c){ _add(a,b,c); salvarNaNuvem(); };
+adicionarComanda = function(a,b,c){ _add(a,b,c); salvarParaCozinha(); };
 
 const _del = removerUmItem;
-removerUmItem = function(a,b,c){ _del(a,b,c); salvarNaNuvem(); };
+removerUmItem = function(a,b,c){ _del(a,b,c); salvarParaCozinha(); };
 
 const _delprato = excluirPrato;
-excluirPrato = function(a){ _delprato(a); salvarNaNuvem(); };
+excluirPrato = function(a){ _delprato(a); salvarParaCozinha(); };
 
 const _nova = criarNovaComanda;
-criarNovaComanda = function(){ _nova(); salvarNaNuvem(); };
+criarNovaComanda = function(){ _nova(); salvarParaCozinha(); };
 
 const _salvamesa = salvarMesa;
-salvarMesa = function(a){ _salvamesa(a); salvarNaNuvem(); };
+salvarMesa = function(a){ _salvamesa(a); salvarParaCozinha(); };
 
-// INICIA CARREGANDO O QUE JÁ EXISTE
-carregarDaNuvem();
+// Carrega ao abrir
+carregarDados();
+
 
         
     </script>
