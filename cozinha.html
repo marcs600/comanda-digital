@@ -23,39 +23,45 @@
     <div id="lista"></div>
 
     <script>
-        const LINK_DADOS = "https://gist.githubusercontent.com/marcs600/15c45bc9cfad612bf01307b69d5ba465/raw/8950b0e30e76a9502b823c21b6f6eaa6d2fa8e54/dados-comanda.json";
+        function atualizar() {
+            const dados = JSON.parse(localStorage.getItem('comandasSalvas') || '[]');
+            const lista = document.getElementById('lista');
+            lista.innerHTML = '';
 
-        async function atualizar() {
-            try {
-                const res = await fetch(LINK_DADOS);
-                if(!res.ok) return;
-                const dados = await res.json();
-                const lista = document.getElementById('lista');
-                lista.innerHTML = '';
+            dados.forEach(comanda => {
+                if(comanda.pratos.length === 0 && comanda.porcoes.length === 0) return;
 
-                dados.forEach(comanda => {
-                    if(comanda.pratos.length === 0 && comanda.porcoes.length === 0) return;
-
-                    lista.innerHTML += `<div class="pedido"><div class="mesa">🪑 Mesa ${comanda.id}</div>`;
-                    
-                    comanda.pratos.forEach(prato => {
-                        lista.innerHTML += `<div class="prato"><div class="nome-prato">Prato ${prato.numero}</div>`;
-                        prato.itens.forEach(item => lista.innerHTML += `<div class="item">• ${item.nome}</div>`);
-                        lista.innerHTML += `</div>`;
-                    });
-
-                    if(comanda.porcoes.length > 0){
-                        lista.innerHTML += `<div class="porcoes"><div class="titulo-porcoes">🍽️ PORÇÕES</div>`;
-                        comanda.porcoes.forEach(item => lista.innerHTML += `<div class="item">• ${item.nome}</div>`);
-                        lista.innerHTML += `</div>`;
-                    }
-
-                    lista.innerHTML += `<button class="btn-pronto" onclick="alert('Só pode limpar pelo sistema principal')">✅ Pedido Pronto</button></div>`;
+                lista.innerHTML += `<div class="pedido"><div class="mesa">🪑 Mesa ${comanda.id}</div>`;
+                
+                comanda.pratos.forEach(prato => {
+                    lista.innerHTML += `<div class="prato"><div class="nome-prato">Prato ${prato.numero}</div>`;
+                    prato.itens.forEach(item => lista.innerHTML += `<div class="item">• ${item.nome}</div>`);
+                    lista.innerHTML += `</div>`;
                 });
-            } catch(e) {}
+
+                if(comanda.porcoes.length > 0){
+                    lista.innerHTML += `<div class="porcoes"><div class="titulo-porcoes">🍽️ PORÇÕES</div>`;
+                    comanda.porcoes.forEach(item => lista.innerHTML += `<div class="item">• ${item.nome}</div>`);
+                    lista.innerHTML += `</div>`;
+                }
+
+                lista.innerHTML += `<button class="btn-pronto" onclick="limparMesa(${comanda.id})">✅ Pedido Pronto</button></div>`;
+            });
         }
 
-        setInterval(atualizar, 2000);
+        function limparMesa(id){
+            let d = JSON.parse(localStorage.getItem('comandasSalvas')||'[]');
+            const i = d.findIndex(c=>c.id===id);
+            if(i!==-1){ 
+                d[i].pratos = []; 
+                d[i].porcoes = []; 
+                d[i].bebidas = [];
+                localStorage.setItem('comandasSalvas',JSON.stringify(d)); 
+                atualizar(); 
+            }
+        }
+
+        setInterval(atualizar, 1000);
         atualizar();
     </script>
 </body>
