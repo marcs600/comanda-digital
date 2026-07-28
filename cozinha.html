@@ -16,21 +16,18 @@
         .titulo-porcoes { font-weight:bold; color:#495057; margin-bottom:6px; font-size:15px; }
         .item { padding:2px 0 2px 15px; color:#212529; }
         .btn-pronto { padding:8px 16px; background:#212529; color:white; border:none; border-radius:6px; cursor:pointer; margin-top:10px; font-weight:bold; }
-        .aviso { text-align:center; color:#6C757D; margin-bottom:16px; font-size:14px; }
     </style>
 </head>
 <body>
     <h1>📋 PEDIDOS DA COZINHA</h1>
-    <div class="aviso">Atualiza automaticamente a cada 2 segundos</div>
     <div id="lista"></div>
 
     <script>
-        // COLOQUE O MESMO LINK AQUI TAMBÉM
-        const LINK_GIST = "https://gist.githubusercontent.com/marcs600/15c45bc9cfad612bf01307b69d5ba465/raw/8950b0e30e76a9502b823c21b6f6eaa6d2fa8e54/dados-comanda.json";
+        const LINK_NUVEM = "https://gist.githubusercontent.com/marcs600/15c45bc9cfad612bf01307b69d5ba465/raw/8950b0e30e76a9502b823c21b6f6eaa6d2fa8e54/dados-comanda.json";
 
         async function atualizar() {
             try {
-                const res = await fetch(LINK_GIST);
+                const res = await fetch(LINK_NUVEM);
                 if(!res.ok) return;
                 const dados = await res.json();
                 const lista = document.getElementById('lista');
@@ -53,28 +50,13 @@
                         lista.innerHTML += `</div>`;
                     }
 
-                    lista.innerHTML += `<button class="btn-pronto" onclick="limparMesa(${comanda.id})">✅ Pedido Pronto</button></div>`;
+                    lista.innerHTML += `<button class="btn-pronto" onclick="limparMesa('${comanda.id}')">✅ Pedido Pronto</button></div>`;
                 });
             } catch(e) {}
         }
 
         async function limparMesa(id){
-            try {
-                const res = await fetch(LINK_GIST);
-                if(!res.ok) return;
-                let d = await res.json();
-                const i = d.findIndex(c=>c.id===id);
-                if(i!==-1){ 
-                    d[i].pratos = []; 
-                    d[i].porcoes = [];
-                    await fetch(LINK_GIST, {
-                        method: "PUT",
-                        headers: {"Content-Type": "application/json"},
-                        body: JSON.stringify(d)
-                    });
-                    atualizar();
-                }
-            } catch(e) {}
+            alert("Para limpar, faça pelo sistema principal.");
         }
 
         setInterval(atualizar, 2000);
