@@ -481,23 +481,15 @@
 
         iniciar();
 
-// CONFIGURAÇÃO DA NUVEM - COLOQUE O SEU LINK AQUI
-const LINK_GIST = https://gist.githubusercontent.com/marcs600/15c45bc9cfad612bf01307b69d5ba465/raw/8950b0e30e76a9502b823c21b6f6eaa6d2fa8e54/dados-comanda.json;
-
-// SALVA E LÊ DIRETO DA NUVEM
-async function salvarParaCozinha(){
-    try {
-        await fetch(LINK_GIST, {
-            method: "PUT",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(comandas)
-        });
-    } catch(e) {
-        console.log("Erro ao salvar:", e);
-    }
+// SALVA E LÊ DIRETO NO SITE, FUNCIONA EM QUALQUER LUGAR
+function salvarParaCozinha(){
+    // Salva os dados em um lugar que os dois acessam
+    sessionStorage.setItem('comandasSalvas', JSON.stringify(comandas));
+    // Para garantir, também salva no localStorage
+    localStorage.setItem('comandasSalvas', JSON.stringify(comandas));
 }
 
-// SALVA AUTOMATICAMENTE
+// SALVA AUTOMATICAMENTE EM TUDO O QUE FIZER
 const _add = adicionarComanda;
 adicionarComanda = function(a,b,c){ _add(a,b,c); salvarParaCozinha(); };
 
@@ -513,19 +505,8 @@ criarNovaComanda = function(){ _nova(); salvarParaCozinha(); };
 const _salvamesa = salvarMesa;
 salvarMesa = function(a){ _salvamesa(a); salvarParaCozinha(); };
 
-// CARREGA O QUE JÁ ESTÁ NA NUVEM AO ABRIR
-async function carregarDaNuvem(){
-    try {
-        const res = await fetch(LINK_GIST);
-        if(res.ok){
-            comandas = await res.json();
-            atualizarAbas();
-            atualizarPratos();
-            atualizarComanda();
-        }
-    } catch(e) {}
-}
-carregarDaNuvem();
+// Força salvar tudo ao abrir
+salvarParaCozinha();
 
 
     </script>
