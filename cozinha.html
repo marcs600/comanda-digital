@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos Cozinha</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family: sans-serif; }
+        body { background:#F8F9FA; padding:16px; }
+        h1 { text-align:center; color:#212529; margin-bottom:20px; padding-bottom:10px; border-bottom:2px solid #212529; }
+        .pedido { background:#FFF; border-radius:12px; padding:16px; margin-bottom:16px; border:1px solid #CED4DA; }
+        .mesa { font-weight:bold; font-size:18px; color:#212529; margin-bottom:10px; }
+        .prato { margin-bottom:10px; }
+        .nome-prato { font-weight:bold; color:#495057; margin-bottom:4px; }
+        .porcoes { margin-top:10px; padding-top:8px; border-top:1px solid #DEE2E6; }
+        .titulo-porcoes { font-weight:bold; color:#495057; margin-bottom:4px; }
+        .item { padding:2px 0 2px 15px; color:#212529; }
+        .btn-pronto { padding:8px 16px; background:#212529; color:white; border:none; border-radius:6px; cursor:pointer; margin-top:8px; }
+    </style>
+</head>
+<body>
+    <h1>📋 PEDIDOS DA COZINHA</h1>
+    <div id="lista"></div>
+
+    <script>
+        function atualizar() {
+            const dados = JSON.parse(localStorage.getItem('comandasSalvas') || '[]');
+            const lista = document.getElementById('lista');
+            lista.innerHTML = '';
+            dados.forEach(comanda => {
+                if(comanda.pratos.length === 0 && comanda.porcoes.length ===0) return;
+                lista.innerHTML += `<div class="pedido"><div class="mesa">🪑 Mesa ${comanda.id}</div>`;
+                
+                comanda.pratos.forEach(prato => {
+                    lista.innerHTML += `<div class="prato"><div class="nome-prato">Prato ${prato.numero}</div>`;
+                    prato.itens.forEach(item => lista.innerHTML += `<div class="item">• ${item.nome}</div>`);
+                    lista.innerHTML += `</div>`;
+                });
+
+                if(comanda.porcoes.length>0){
+                    lista.innerHTML += `<div class="porcoes"><div class="titulo-porcoes">🍽️ Porções</div>`;
+                    comanda.porcoes.forEach(item => lista.innerHTML += `<div class="item">• ${item.nome}</div>`);
+                    lista.innerHTML += `</div>`;
+                }
+
+                lista.innerHTML += `<button class="btn-pronto" onclick="limparMesa(${comanda.id})">✅ Pedido Pronto</button></div>`;
+            });
+        }
+
+        function limparMesa(id){
+            let d = JSON.parse(localStorage.getItem('comandasSalvas')||'[]');
+            const i = d.findIndex(c=>c.id===id);
+            if(i!==-1){ d[i].pratos=[]; d[i].porcoes=[]; localStorage.setItem('comandasSalvas',JSON.stringify(d)); atualizar(); }
+        }
+
+        setInterval(atualizar, 1000);
+        atualizar();
+    </script>
+</body>
+</html>
