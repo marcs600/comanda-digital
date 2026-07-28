@@ -23,11 +23,11 @@
     <div id="lista"></div>
 
     <script>
-        const LINK_NUVEM = "https://gist.githubusercontent.com/marcs600/15c45bc9cfad612bf01307b69d5ba465/raw/8950b0e30e76a9502b823c21b6f6eaa6d2fa8e54/dados-comanda.json";
+        const LINK_DADOS = "https://gist.githubusercontent.com/marcs600/15c45bc9cfad612bf01307b69d5ba465/raw/8950b0e30e76a9502b823c21b6f6eaa6d2fa8e54/dados-comanda.json";
 
         async function atualizar() {
             try {
-                const res = await fetch(LINK_NUVEM);
+                const res = await fetch(LINK_DADOS);
                 if(!res.ok) return;
                 const dados = await res.json();
                 const lista = document.getElementById('lista');
@@ -50,13 +50,9 @@
                         lista.innerHTML += `</div>`;
                     }
 
-                    lista.innerHTML += `<button class="btn-pronto" onclick="limparMesa('${comanda.id}')">✅ Pedido Pronto</button></div>`;
+                    lista.innerHTML += `<button class="btn-pronto" onclick="alert('Só pode limpar pelo sistema principal')">✅ Pedido Pronto</button></div>`;
                 });
             } catch(e) {}
-        }
-
-        async function limparMesa(id){
-            alert("Para limpar, faça pelo sistema principal.");
         }
 
         setInterval(atualizar, 2000);
