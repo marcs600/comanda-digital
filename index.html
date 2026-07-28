@@ -481,41 +481,64 @@
 
         iniciar();
 
-// CONFIGURAÇÃO
-const LINK_GIST = "https://gist.githubusercontent.com/marcs600/15c45bc9cfad612bf01307b69d5ba465/raw/8950b0e30e76a9502b823c21b6f6eaa6d2fa8e54/dados-comanda.json";
+// === NUVEM DO GITHUB GIST ===
+const LINK_NUVEM = "https://gist.githubusercontent.com/marcs600/15c45bc9cfad612bf01307b69d5ba465/raw/8950b0e30e76a9502b823c21b6f6eaa6d2fa8e54/dados-comanda.json";
+const LINK_EDITAR = "https://api.github.com/gists/15c45bc9cfad612bf01307b69d5ba465";
 
-async function salvarParaCozinha(){
+// SALVA DIRETO NA NUVEM
+async function salvarNaNuvem(){
     try {
-        await fetch(LINK_GIST, {
-            method: "PUT",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(comandas)
+        await fetch(LINK_EDITAR, {
+            method: "PATCH",
+            headers: {
+                "Authorization": "token ghp_ColoqueSeuTokenAqui",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                files: {
+                    "dados-comanda.json": {
+                        content: JSON.stringify(comandas, null, 2)
+                    }
+                }
+            })
         });
-    } catch(e) { console.log("Erro:", e); }
+    } catch(e) {
+        console.log("Aviso:", e);
+    }
 }
 
-const _add = adicionarComanda;
-adicionarComanda = function(a,b,c){ _add(a,b,c); salvarParaCozinha(); };
-
-const _del = removerUmItem;
-removerUmItem = function(a,b,c){ _del(a,b,c); salvarParaCozinha(); };
-
-const _delprato = excluirPrato;
-excluirPrato = function(a){ _delprato(a); salvarParaCozinha(); };
-
-const _nova = criarNovaComanda;
-criarNovaComanda = function(){ _nova(); salvarParaCozinha(); };
-
-const _salvamesa = salvarMesa;
-salvarMesa = function(a){ _salvamesa(a); salvarParaCozinha(); };
-
+// CARREGA OS PEDIDOS AO ABRIR
 async function carregarDaNuvem(){
     try {
-        const res = await fetch(LINK_GIST);
-        if(res.ok){ comandas = await res.json(); atualizarAbas(); atualizarPratos(); atualizarComanda(); }
+        const res = await fetch(LINK_NUVEM);
+        if(res.ok){
+            comandas = await res.json();
+            atualizarAbas();
+            atualizarPratos();
+            atualizarComanda();
+        }
     } catch(e) {}
 }
+
+// SALVA EM TODA ALTERAÇÃO
+const _add = adicionarComanda;
+adicionarComanda = function(a,b,c){ _add(a,b,c); salvarNaNuvem(); };
+
+const _del = removerUmItem;
+removerUmItem = function(a,b,c){ _del(a,b,c); salvarNaNuvem(); };
+
+const _delprato = excluirPrato;
+excluirPrato = function(a){ _delprato(a); salvarNaNuvem(); };
+
+const _nova = criarNovaComanda;
+criarNovaComanda = function(){ _nova(); salvarNaNuvem(); };
+
+const _salvamesa = salvarMesa;
+salvarMesa = function(a){ _salvamesa(a); salvarNaNuvem(); };
+
+// INICIA CARREGANDO O QUE JÁ EXISTE
 carregarDaNuvem();
+
         
     </script>
 </body>
