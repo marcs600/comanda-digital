@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comanda Digital - Site</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: #F8F9FA; min-height: 100vh; padding-bottom: 80px; }
+
+        .barra-abas { display: flex; gap: 8px; padding: 10px 16px; background: #E9ECEF; overflow-x: auto; border-bottom: 1px solid #CED4DA; }
+        .aba-comanda { display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: #FFFFFF; border-radius: 16px; font-size: 14px; font-weight: 500; color: #495057; white-space: nowrap; cursor: pointer; border: 1px solid transparent; }
+        .aba-comanda.ativa { background: #212529; color: #FFFFFF; border-color: #212529; }
+        .btn-nova-comanda { padding: 8px 14px; background: transparent; border: 1px dashed #6C757D; color: #495057; border-radius: 16px; font-weight: bold; cursor: pointer; white-space: nowrap; }
+        .btn-fechar-aba { background: none; border: none; font-size: 18px; cursor: pointer; padding: 0 4px; color: #DC3545; font-weight: bold; }
+
+        .cabecalho { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 8px; border-bottom: 1px solid #CED4DA; position: relative; }
+        .categorias { display: flex; gap: 12px; overflow-x: auto; flex: 1; margin-right: 100px; }
+        .btn-cat { display: flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: 20px; border: none; font-size: 16px; font-weight: 500; white-space: nowrap; cursor: pointer; transition: 0.2s; }
+        .btn-cat.ativo { background-color: #212529; color: #FFFFFF; }
+        .btn-cat:not(.ativo) { background-color: #FFFFFF; color: #495057; border: 1px solid #DEE2E6; }
+        .btn-menu-mesas { position: absolute; right: 60px; top: 12px; width: 40px; height: 40px; border-radius: 50%; border: none; background-color: #495057; color: white; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
+        .btn-menu { position: absolute; right: 16px; top: 12px; width: 40px; height: 40px; border-radius: 50%; border: none; background-color: #212529; color: white; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
+
+        .btn-novo-prato { margin: 10px 16px; padding: 8px; background: #212529; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: calc(100% - 32px); font-size: 15px; }
+        .lista-pratos { padding: 0 16px 10px; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid #CED4DA; }
+        .prato-card { background: #FFFFFF; border-radius: 8px; padding: 10px 12px; border: 1px solid #DEE2E6; transition: background 0.2s; }
+        .prato-card.ativo { background: #DEE2E6; border-color: #212529; }
+        .cab-prato { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; cursor: pointer; }
+        .nome-prato { font-weight: bold; font-size: 15px; color: #212529; }
+        .item-prato { font-size: 14px; color: #343A40; padding: 2px 0 2px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #F1F3F5; }
+        .item-prato:last-child { border-bottom: none; }
+        .btn-exc-prato, .btn-exc-item { background: none; border: none; color: #DC3545; font-size: 16px; cursor: pointer; padding: 0 4px; }
+
+        .lista-porcoes { padding: 10px 16px 15px; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid #CED4DA; }
+        .titulo-porcoes { font-weight: bold; font-size: 15px; color: #212529; margin-bottom: 4px; }
+        .item-porcao { font-size: 14px; color: #343A40; padding: 2px 0; display: flex; justify-content: space-between; align-items: center; }
+
+        .titulo-secao { color: #212529; font-size: 24px; font-weight: 600; padding: 20px 20px 10px; }
+        .lista-itens { padding: 0 16px; display: flex; flex-direction: column; gap: 14px; }
+        .item-card { background-color: #FFFFFF; border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #E9ECEF; }
+        .info-item { display: flex; flex-direction: column; gap: 4px; }
+        .nome-item { font-size: 18px; color: #212529; }
+        .preco-item { font-size: 15px; color: #495057; font-weight: 500; }
+        .botoes-qtd { display: flex; align-items: center; gap: 8px; }
+        .btn-add, .btn-sub { width: 40px; height: 40px; border-radius: 50%; border: none; font-size: 22px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.15s; }
+        .btn-add { background-color: #212529; color: white; }
+        .btn-sub { background-color: #6C757D; color: white; }
+        .qtd-no-item { min-width: 24px; text-align: center; font-weight: bold; color: #212529; font-size: 18px; }
+
+        .rodape { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #FFFFFF; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #CED4DA; }
+        .btn-ver { display: flex; align-items: center; gap: 6px; color: #212529; font-size: 17px; font-weight: 500; background: none; border: none; cursor: pointer; }
+        .qtd-itens, .total-geral { color: #495057; font-size: 17px; font-weight: 500; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+        .menu-gerenciar, .menu-mesas { right: 0; top: 0; height: 100%; width: 90%; max-width: 420px; position: absolute; background: #F8F9FA; padding: 24px 20px; overflow-y: auto; border-left: 1px solid #CED4DA; }
+        .menu-mesas h3 { color: #212529; margin-bottom: 16px; }
+        .item-mesa { background: #FFFFFF; padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; border: 1px solid #E9ECEF; }
+        .item-mesa input { flex:1; padding: 8px; border: 1px solid #CED4DA; border-radius: 6px; font-size: 14px; background: #FFFFFF; color: #212529; }
+        .btn-salvar-mesa { padding: 8px 12px; border: none; border-radius: 6px; background: #212529; color: white; cursor: pointer; }
+        .btn-excluir-mesa { padding: 8px 12px; border: none; border-radius: 6px; background: #DC3545; color: white; cursor: pointer; }
+        .abas-menu { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid #CED4DA; padding-bottom: 8px; }
+        .aba-menu { flex:1; padding: 8px; border: none; border-radius: 8px; background: #E9ECEF; color: #495057; cursor: pointer; font-weight: 500; }
+        .aba-menu.ativa { background: #212529; color: white; }
+        .cabecalho-menu { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .btn-fechar-menu { width: 36px; height: 36px; border-radius: 50%; border: none; background: #DC3545; color: white; font-size: 18px; cursor: pointer; }
+        .cat-menu { margin-bottom: 18px; }
+        .cat-menu h4 { color: #212529; margin-bottom: 8px; font-size: 16px; }
+        .item-menu, .item-cat { background: #FFFFFF; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 6px; border: 1px solid #E9ECEF; }
+        .item-menu input, .item-menu select, .item-cat input { padding: 8px; border: 1px solid #CED4DA; border-radius: 6px; font-size: 14px; background: #FFFFFF; color: #212529; }
+        .acoes-item-menu, .acoes-cat { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+        .btn-salvar-item, .btn-salvar-cat { padding: 8px; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; background: #212529; color: white; }
+        .btn-excluir-item, .btn-excluir-cat { padding: 8px 12px; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; background: #DC3545; color: white; }
+        .btn-novo-item, .btn-nova-cat { width: 100%; padding: 10px; border: 2px dashed #6C757D; background: transparent; color: #495057; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px; }
+        .btn-salvar-tudo { width: 100%; padding: 12px; background: #212529; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 16px; }
+
+        .comanda-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: flex-end; z-index: 998; }
+        .comanda-conteudo { background: #F8F9FA; width: 100%; max-height: 80vh; border-radius: 20px 20px 0 0; padding: 24px 20px; overflow-y: auto; border-top: 1px solid #CED4DA; }
+        .cabecalho-comanda { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #DEE2E6; padding-bottom: 10px; }
+        .numero-comanda { font-size: 18px; font-weight: bold; color: #212529; }
+        .item-comanda { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #E9ECEF; color: #495057; }
+        .btn-remover-comanda { background: none; border: none; color: #DC3545; font-size: 22px; font-weight: bold; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: 0.15s; }
+        .btn-remover-comanda:hover { background: #E9ECEF; }
+        .total-comanda { margin-top: 16px; font-size: 20px; font-weight: bold; color: #212529; text-align: right; }
+        .btn-fechar { margin-top: 16px; width: 100%; padding: 12px; background: #212529; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="barra-abas" id="barra-abas"></div>
+
+    <div class="cabecalho">
+        <div class="categorias" id="container-cats"></div>
+        <button class="btn-menu-mesas" onclick="abrirMenuMesas()">🪑</button>
+        <button class="btn-menu" onclick="abrirMenu()">⚙️</button>
+    </div>
+
+    <button class="btn-novo-prato" onclick="criarNovoPrato()">+ Adicionar Novo Prato</button>
+    <div class="lista-pratos" id="lista-pratos"></div>
+
+    <div class="lista-porcoes" id="lista-porcoes"></div>
+
+    <h2 class="titulo-secao" id="titulo-cat"></h2>
+    <div class="lista-itens" id="lista-cat"></div>
+
+    <div class="rodape">
+        <button class="btn-ver" onclick="abrirComanda()">💵 Ver comanda</button>
+        <div style="display:flex; gap:12px;">
+            <span class="qtd-itens" id="contador">0 itens</span>
+            <span class="total-geral">R$ <span id="total-geral">0,00</span></span>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-mesas">
+        <div class="menu-mesas">
+            <div class="cabecalho-menu">
+                <h3>Gerenciar Mesas</h3>
+                <button class="btn-fechar-menu" onclick="fecharMenuMesas()">✕</button>
+            </div>
+            <div id="lista-mesas"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="menu-gerenciar">
+        <div class="menu-gerenciar">
+            <div class="cabecalho-menu">
+                <h3 style="color:#212529;">Gerenciar</h3>
+                <button class="btn-fechar-menu" onclick="fecharMenu()">✕</button>
+            </div>
+            <div class="abas-menu">
+                <button class="aba-menu ativo" onclick="mostrarAbaMenu('itens')">Itens</button>
+                <button class="aba-menu" onclick="mostrarAbaMenu('categorias')">Categorias</button>
+            </div>
+            <div id="aba-itens"></div>
+            <div id="aba-categorias" style="display:none;"></div>
+            <button class="btn-salvar-tudo" onclick="salvarTodasAlteracoes()">💾 Salvar Tudo</button>
+        </div>
+    </div>
+
+    <div class="comanda-modal" id="modal-comanda">
+        <div class="comanda-conteudo">
+            <div class="cabecalho-comanda">
+                <span class="numero-comanda" id="num-comanda">Mesa nº 1</span>
+                <button class="btn-fechar" style="width:auto; padding:8px 16px; margin:0;" onclick="fecharComanda()">Fechar</button>
+            </div>
+            <div id="lista-comanda"></div>
+            <div class="total-comanda">Total: R$ <span id="valor-total">0,00</span></div>
+        </div>
+    </div>
+
+    <script>
+        let categoriaAtual = 'Acompanhamentos';
+        let abaAtual = 0;
+        let pratoAtivo = null;
+        let comandas = [];
+
+        let itens = {
+            'Acompanhamentos': [ {nome:'Arroz branco', preco:5.00}, {nome:'Feijão tropeiro', preco:8.00}, {nome:'Farofa de bacon', preco:7.00}, {nome:'Vinagrete', preco:3.00}, {nome:'Pão de alho', preco:4.00} ],
+            'Carnes': [ {nome:'Picanha', preco:35.00}, {nome:'Costela', preco:28.00}, {nome:'Filé mignon', preco:42.00}, {nome:'Fraldinha', preco:30.00}, {nome:'Linguiça', preco:12.00} ],
+            'Saladas': [ {nome:'Salada verde', preco:6.00}, {nome:'Salada de maionese', preco:7.50}, {nome:'Salada de alface', preco:5.00}, {nome:'Salada de tomate', preco:6.00} ],
+            'Porções': [ {nome:'Batata frita', preco:10.00}, {nome:'Polenta frita', preco:9.00}, {nome:'Queijo coalho', preco:15.00}, {nome:'Calabresa acebolada', preco:12.00} ],
+            'Bebidas': [ {nome:'Água', preco:3.00}, {nome:'Refrigerante', preco:5.00}, {nome:'Suco', preco:6.00}, {nome:'Cerveja', preco:8.00}, {nome:'Café', preco:4.00} ]
+        };
+        let categorias = Object.keys(itens);
+
+        function iniciar() {
+            criarNovaComanda();
+            atualizarBotoesCategorias();
+            carregarItens();
+        }
+
+        function atualizarBotoesCategorias() {
+            const container = document.getElementById('container-cats');
+            container.innerHTML = '';
+            categorias.forEach(cat => {
+                container.innerHTML += `<button class="btn-cat ${cat===categoriaAtual?'ativo':''}" onclick="mudarCategoria('${cat}')">${cat}</button>`;
+            });
+        }
+
+        function pegarProximoNumeroLivre() {
+            let numero = 1;
+            while (comandas.some(c => c.id === numero)) numero++;
+            return numero;
+        }
+
+        function pegarProximoNumeroPratoLivre(comanda) {
+            let num = 1;
+            while (comanda.pratos.some(p => p.numero === num)) num++;
+            return num;
+        }
+
+        function criarNovaComanda() {
+            comandas.push({ id: pegarProximoNumeroLivre(), pratos: [], porcoes: [], bebidas: [] });
+            abaAtual = comandas.length - 1;
+            criarNovoPrato();
+            atualizarAbas();
+            atualizarComanda();
+        }
+
+        function criarNovoPrato() {
+            const comanda = comandas[abaAtual];
+            const novoNum = pegarProximoNumeroPratoLivre(comanda);
+            comanda.pratos.push({ numero: novoNum, itens: [] });
+            pratoAtivo = comanda.pratos.length - 1;
+            atualizarPratos();
+        }
+
+        function atualizarPratos() {
+            const lista = document.getElementById('lista-pratos');
+            lista.innerHTML = '';
+            const comanda = comandas[abaAtual];
+            comanda.pratos.forEach((prato, ind) => {
+                lista.innerHTML += `
+                    <div class="prato-card ${pratoAtivo===ind?'ativo':''}">
+                        <div class="cab-prato" onclick="selecionarPrato(${ind})">
+                            <span class="nome-prato">Prato ${prato.numero}</span>
+                            ${comanda.pratos.length>1?`<button class="btn-exc-prato" onclick="event.stopPropagation(); excluirPrato(${ind})">✕</button>`:''}
+                        </div>
+                        ${prato.itens.map((item,i)=>`<div class="item-prato"><span>${item.nome} — R$ ${item.preco.toFixed(2).replace('.',',')}</span><button class="btn-exc-item" onclick="removerItemPrato(${ind},${i})">✕</button></div>`).join('')}
+                    </div>
+                `;
+            });
+            atualizarPorcoes();
+            atualizarTotal();
+        }
+
+        function atualizarPorcoes() {
+            const lista = document.getElementById('lista-porcoes');
+            const comanda = comandas[abaAtual];
+            lista.innerHTML = comanda.porcoes.length > 0 ? `<div class="titulo-porcoes">Porções</div>` : '';
+            comanda.porcoes.forEach((item,i)=>{
+                lista.innerHTML += `<div class="item-porcao"><span>${item.nome} — R$ ${item.preco.toFixed(2).replace('.',',')}</span><button class="btn-exc-item" onclick="removerPorcao(${i})">✕</button></div>`;
+            });
+        }
+
+        function selecionarPrato(ind) { pratoAtivo = ind; atualizarPratos(); }
+
+        function excluirPrato(ind) {
+            if(confirm('Excluir este prato? O número volta a ficar livre.')){
+                comandas[abaAtual].pratos.splice(ind,1);
+                if(pratoAtivo >= comandas[abaAtual].pratos.length) pratoAtivo = comandas[abaAtual].pratos.length -1;
+                if(comandas[abaAtual].pratos.length === 0) criarNovoPrato();
+                atualizarPratos();
+            }
+        }
+
+        function atualizarAbas() {
+            const barra = document.getElementById('barra-abas');
+            barra.innerHTML = '';
+            comandas.forEach((com, ind) => {
+                barra.innerHTML += `
+                    <div class="aba-comanda ${ind===abaAtual?'ativa':''}" onclick="selecionarAba(${ind})">
+                        Mesa ${com.id}
+                        ${comandas.length>1?`<button class="btn-fechar-aba" onclick="event.stopPropagation(); fecharAba(${ind})">✕</button>`:''}
+                    </div>
+                `;
+            });
+            barra.innerHTML += `<button class="btn-nova-comanda" onclick="criarNovaComanda()">+ Nova Comanda</button>`;
+        }
+
+        function selecionarAba(ind) {
+            abaAtual = ind;
+            pratoAtivo = null;
+            atualizarAbas();
+            atualizarPratos();
+            atualizarComanda();
+            carregarItens();
+        }
+
+        function fecharAba(ind) {
+            if(comandas.length <= 1) return alert('Mantenha pelo menos uma comanda aberta!');
+            if(confirm('Excluir essa comanda? O número dela voltará a ficar disponível.')) {
+                comandas.splice(ind, 1);
+                if (abaAtual >= comandas.length) abaAtual = comandas.length - 1;
+                atualizarAbas();
+                atualizarComanda();
+                carregarMenuMesas();
+            }
+        }
+
+        function abrirMenuMesas() {
+            carregarMenuMesas();
+            document.getElementById('modal-mesas').style.display='block';
+        }
+        function fecharMenuMesas() {
+            document.getElementById('modal-mesas').style.display='none';
+        }
+        function carregarMenuMesas() {
+            const lista = document.getElementById('lista-mesas');
+            lista.innerHTML = '';
+            comandas.forEach((mesa, ind) => {
+                lista.innerHTML += `
+                    <div class="item-mesa">
+                        <input type="text" id="nome-mesa-${ind}" value="${mesa.id}" placeholder="Número/Nome da mesa">
+                        <button class="btn-salvar-mesa" onclick="salvarMesa(${ind})">💾</button>
+                        ${comandas.length>1?`<button class="btn-excluir-mesa" onclick="fecharAba(${ind}); abrirMenuMesas();">🗑️</button>`:''}
+                    </div>
+                `;
+            });
+        }
+        function salvarMesa(ind) {
+            const novoNome = document.getElementById(`nome-mesa-${ind}`).value.trim();
+            if(!novoNome) return alert('Digite um valor válido!');
+            comandas[ind].id = novoNome;
+            atualizarAbas();
+            atualizarComanda();
+            alert('Mesa renomeada com sucesso!');
+        }
+
+        function carregarItens() {
+            const lista = document.getElementById('lista-cat');
+            lista.innerHTML = '';
+            document.getElementById('titulo-cat').textContent = categoriaAtual;
+            itens[categoriaAtual].forEach(item => {
+                const qtd = comandas[abaAtual].pratos.flatMap(p => p.itens).filter(i=>i.nome===item.nome && i.preco===item.preco).length;
+                lista.innerHTML += `
+                    <div class="item-card">
+                        <div class="info-item">
+                            <span class="nome-item">${item.nome}</span>
+                            <span class="preco-item">R$ ${item.preco.toFixed(2).replace('.', ',')}</span>
+                        </div>
+                        <div class="botoes-qtd">
+                            <button class="btn-sub" onclick="removerUmItem('${categoriaAtual}','${item.nome}',${item.preco})" title="Retirar um">−</button>
+                            ${qtd>0?`<span class="qtd-no-item">${qtd}</span>`:''}
+                            <button class="btn-add" onclick="adicionarComanda('${categoriaAtual}','${item.nome}',${item.preco})" title="Adicionar">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function adicionarComanda(cat,nome,preco){
+            if(cat === 'Bebidas'){
+                comandas[abaAtual].bebidas.push({nome,preco});
+            } else if(cat === 'Porções'){
+                comandas[abaAtual].porcoes.push({nome,preco});
+            } else {
+                if(pratoAtivo === null) return alert('Crie ou clique no Prato abaixo para selecionar primeiro!');
+                comandas[abaAtual].pratos[pratoAtivo].itens.push({nome,preco});
+            }
+            atualizarPratos();
+            carregarItens();
+        }
+
+        function removerUmItem(cat,nome,preco){
+            if(cat === 'Bebidas'){
+                let ind = comandas[abaAtual].bebidas.findIndex(i=>i.nome===nome && i.preco===preco);
+                if(ind>-1) comandas[abaAtual].bebidas.splice(ind,1);
+            } else if(cat === 'Porções'){
+                let ind = comandas[abaAtual].porcoes.findIndex(i=>i.nome===nome && i.preco===preco);
+                if(ind>-1) comandas[abaAtual].porcoes.splice(ind,1);
+            } else {
+                if(pratoAtivo === null) return;
+                let ind = comandas[abaAtual].pratos[pratoAtivo].itens.findIndex(i=>i.nome===nome && i.preco===preco);
+                if(ind>-1) comandas[abaAtual].pratos[pratoAtivo].itens.splice(ind,1);
+            }
+            atualizarPratos();
+            carregarItens();
+        }
+
+        function removerItemPrato(indPrato, indItem) {
+            comandas[abaAtual].pratos[indPrato].itens.splice(indItem,1);
+            atualizarPratos();
+        }
+
+        function removerPorcao(ind) {
+            comandas[abaAtual].porcoes.splice(ind,1);
+            atualizarPratos();
+        }
+
+        function mudarCategoria(cat) {
+            categoriaAtual = cat;
+            atualizarBotoesCategorias();
+            carregarItens();
+        }
+
+        function mostrarAbaMenu(aba) {
+            document.querySelectorAll('.aba-menu').forEach(b=>b.classList.remove('ativo'));
+            event.target.classList.add('ativo');
+            document.getElementById('aba-itens').style.display = aba==='itens'?'block':'none';
+            document.getElementById('aba-categorias').style.display = aba==='categorias'?'block':'none';
+            if(aba==='itens') carregarMenuItens();
+            else carregarMenuCategorias();
+        }
+
+        function carregarMenuItens() {
+            const container = document.getElementById('aba-itens');
+            container.innerHTML = '';
+            categorias.forEach(cat => {
+                container.innerHTML += `<div class="cat-menu"><h4>${cat}</h4>`;
+                itens[cat].forEach((item, ind) => {
+                    container.innerHTML += `
+                        <div class="item-menu">
+                            <input type="text" class="edt-nome" value="${item.nome}">
+                            <input type="number" class="edt-preco" value="${item.preco.toFixed(2)}" step="0.01">
+                            <select class="sel-cat">
+                                ${categorias.map(c => `<option value="${c}" ${c===cat?'selected':''}>${c}</option>`).join('')}
+                            </select>
+                            <div class="acoes-item-menu">
+                                <button class="btn-salvar-item" onclick="salvarItemIndividual(this, '${cat}', ${ind})">💾 Salvar</button>
+                                <button class="btn-excluir-item" onclick="excluirItem('${cat}', ${ind})">🗑️ Excluir</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML += `<button class="btn-novo-item" onclick="adicionarNovoItem('${cat}')">+ Novo Produto</button></div>`;
+            });
+        }
+
+        function carregarMenuCategorias() {
+            const container = document.getElementById('aba-categorias');
+            container.innerHTML = `<div class="cat-menu"><h4>Suas Categorias</h4>`;
+            categorias.forEach((cat, ind) => {
+                container.innerHTML += `
+                    <div class="item-cat">
+                        <input type="text" class="edt-cat-nome" value="${cat}">
+                        <div class="acoes-cat">
+                            <button class="btn-salvar-cat" onclick="renomearCategoria(${ind})">💾 Renomear</button>
+                            <button class="btn-excluir-cat" onclick="excluirCategoria(${ind})">🗑️ Excluir</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML += `<button class="btn-nova-cat" onclick="adicionarNovaCategoria()">+ Adicionar Categoria</button></div>`;
+        }
+
+        function abrirMenu() { mostrarAbaMenu('itens'); document.getElementById('menu-gerenciar').style.display='block'; }
+        function fecharMenu() { document.getElementById('menu-gerenciar').style.display='none'; }
+        function adicionarNovoItem(cat) { itens[cat].push({nome:'', preco:0}); carregarMenuItens(); }
+        function adicionarNovaCategoria() { const n=prompt('Nome da categoria:'); if(n&&n.trim()&&!categorias.includes(n.trim())){categorias.push(n.trim());itens[n.trim()]=[];carregarMenuCategorias();atualizarBotoesCategorias();} }
+
+        function excluirItem(c,i){if(!confirm('Excluir produto?'))return;itens[c].splice(i,1);carregarMenuItens();carregarItens();}
+        function renomearCategoria(i){const e=document.querySelectorAll('.edt-cat-nome')[i];const a=categorias[i];const n=e.value.trim();if(!n||n===a)return;if(categorias.includes(n))return alert('Já existe!');categorias[i]=n;itens[n]=itens[a];delete itens[a];atualizarBotoesCategorias();carregarMenuCategorias();if(categoriaAtual===a)categoriaAtual=n;carregarItens();}
+        function excluirCategoria(i){if(categorias.length<=1)return alert('Mantenha pelo menos uma!');if(!confirm('Excluir categoria e todos itens?'))return;const n=categorias[i];categorias.splice(i,1);delete itens[n];if(categoriaAtual===n)categoriaAtual=categorias[0];atualizarBotoesCategorias();carregarItens();carregarMenuCategorias();}
+
+        function salvarItemIndividual(b,c,i){const p=b.parentElement.parentElement;const nn=p.querySelector('.edt-nome').value.trim();const np=parseFloat(p.querySelector('.edt-preco').value)||0;const nc=p.querySelector('.sel-cat').value;if(!nn)return alert('Digite o nome!');if(c===nc){itens[c][i]={nome:nn,preco:np};}else{itens[c].splice(i,1);itens[nc].push({nome:nn,preco:np});}carregarItens();alert('Salvo!');}
+        function salvarTodasAlteracoes(){fecharMenu();}
+
+        function atualizarTotal(){
+            let total=0, qtd=0;
+            comandas[abaAtual].pratos.forEach(p=>{p.itens.forEach(i=>{total+=i.preco;qtd++;});});
+            comandas[abaAtual].porcoes.forEach(i=>{total+=i.preco;qtd++;});
+            comandas[abaAtual].bebidas.forEach(i=>{total+=i.preco;qtd++;});
+            document.getElementById('contador').textContent=`${qtd} item${qtd!==1?'s':''}`;
+            document.getElementById('total-geral').textContent=total.toFixed(2).replace('.',',');
+        }
+
+        function atualizarComanda(){
+            const cmd=comandas[abaAtual];
+            document.getElementById('num-comanda').textContent=`Mesa nº ${cmd.id}`;
+        }
+
+        function abrirComanda(){
+            atualizarComanda();
+            const cmd=comandas[abaAtual];
+            const l=document.getElementById('lista-comanda');l.innerHTML='';
+            cmd.pratos.forEach(prato=>{
+                l.innerHTML+=`<div style="margin-bottom:10px;"><strong>Prato ${prato.numero}</strong><br>`;
+                prato.itens.forEach(item=>{
+                    l.innerHTML+=`• ${item.nome} — R$ ${item.preco.toFixed(2).replace('.',',')}<br>`;
+                });
+                l.innerHTML+=`</div>`;
+            });
+            if(cmd.porcoes.length>0){
+                l.innerHTML+=`<div style="margin-top:10px; border-top:1px solid #DEE2E6; padding-top:8px;"><strong>Porções</strong><br>`;
+                cmd.porcoes.forEach(item=>{
+                    l.innerHTML+=`• ${item.nome} — R$ ${item.preco.toFixed(2).replace('.',',')}<br>`;
+                });
+                l.innerHTML+=`</div>`;
+            }
+            if(cmd.bebidas.length>0){
+                l.innerHTML+=`<div style="margin-top:10px; border-top:1px solid #DEE2E6; padding-top:8px;"><strong>Bebidas</strong><br>`;
+                cmd.bebidas.forEach(item=>{
+                    l.innerHTML+=`• ${item.nome} — R$ ${item.preco.toFixed(2).replace('.',',')}<br>`;
+                });
+                l.innerHTML+=`</div>`;
+            }
+            document.getElementById('modal-comanda').style.display='flex';
+        }
+
+        function fecharComanda(){document.getElementById('modal-comanda').style.display='none';}
+
+        iniciar();
+    </script>
+</body>
+</html>
