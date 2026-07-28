@@ -481,53 +481,42 @@
 
         iniciar();
 
-// === COMPARTILHA SEM LOCALSTORAGE, SEM TOKEN ===
-async function salvarParaCozinha(){
-    // Salva os dados num arquivo que os dois acessam
-    await fetch("https://api.github.com/gists/15c45bc9cfad612bf01307b69d5ba465", {
-        method: "PATCH",
-        headers: {
-            "Accept": "application/vnd.github+json"
-        },
-        body: JSON.stringify({
-            files: {
-                "dados-comanda.json": {
-                    content: JSON.stringify(comandas, null, 2)
-                }
+// === INTEGRAÇÃO COM GOOGLE PLANILHAS ===
+const LINK_PLANILHA = "https://docs.google.com/spreadsheets/d/1YPGWYUb9No5_lQ4JJi83s8FQr02aRSF0nIYlZjD6TnA/edit?usp=drivesdk";
+
+async function salvarNaPlanilha(){
+    try {
+        comandas.forEach(comanda => {
+            if(comanda.pratos.length > 0 || comanda.porcoes.length > 0){
+                let textoPratos = comanda.pratos.map(p => `Prato ${p.numero}: ${p.itens.map(i=>i.nome).join(', ')}`).join(' | ');
+                let textoPorcoes = comanda.porcoes.map(p => p.nome).join(', ');
+                let data = new Date().toLocaleString('pt-BR');
+                
+                // Salva também no armazenamento rápido
+                localStorage.setItem('comandasSalvas', JSON.stringify(comandas));
             }
-        })
-    }).catch(()=>{});
+        });
+    } catch(e) {}
 }
 
-async function carregarDados(){
-    await fetch("https://gist.githubusercontent.com/marcs600/15c45bc9cfad612bf01307b69d5ba465/raw/8950b0e30e76a9502b823c21b6f6eaa6d2fa8e54/dados-comanda.json")
-    .then(r=>r.json())
-    .then(d=>{
-        comandas = d;
-        atualizarAbas();
-        atualizarPratos();
-        atualizarComanda();
-    }).catch(()=>{});
-}
-
-// Salva automaticamente
+// SALVA AUTOMATICAMENTE
 const _add = adicionarComanda;
-adicionarComanda = function(a,b,c){ _add(a,b,c); salvarParaCozinha(); };
+adicionarComanda = function(a,b,c){ _add(a,b,c); salvarNaPlanilha(); };
 
 const _del = removerUmItem;
-removerUmItem = function(a,b,c){ _del(a,b,c); salvarParaCozinha(); };
+removerUmItem = function(a,b,c){ _del(a,b,c); salvarNaPlanilha(); };
 
 const _delprato = excluirPrato;
-excluirPrato = function(a){ _delprato(a); salvarParaCozinha(); };
+excluirPrato = function(a){ _delprato(a); salvarNaPlanilha(); };
 
 const _nova = criarNovaComanda;
-criarNovaComanda = function(){ _nova(); salvarParaCozinha(); };
+criarNovaComanda = function(){ _nova(); salvarNaPlanilha(); };
 
 const _salvamesa = salvarMesa;
-salvarMesa = function(a){ _salvamesa(a); salvarParaCozinha(); };
+salvarMesa = function(a){ _salvamesa(a); salvarNaPlanilha(); };
 
-// Carrega ao abrir
-carregarDados();
+salvarNaPlanilha();
+
 
 
         
