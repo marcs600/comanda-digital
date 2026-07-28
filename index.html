@@ -480,35 +480,6 @@
         function fecharComanda(){document.getElementById('modal-comanda').style.display='none';}
 
         iniciar();
-
-// SALVA E LÊ DIRETO NO SITE, FUNCIONA EM QUALQUER LUGAR
-function salvarParaCozinha(){
-    // Salva os dados em um lugar que os dois acessam
-    sessionStorage.setItem('comandasSalvas', JSON.stringify(comandas));
-    // Para garantir, também salva no localStorage
-    localStorage.setItem('comandasSalvas', JSON.stringify(comandas));
-}
-
-// SALVA AUTOMATICAMENTE EM TUDO O QUE FIZER
-const _add = adicionarComanda;
-adicionarComanda = function(a,b,c){ _add(a,b,c); salvarParaCozinha(); };
-
-const _del = removerUmItem;
-removerUmItem = function(a,b,c){ _del(a,b,c); salvarParaCozinha(); };
-
-const _delprato = excluirPrato;
-excluirPrato = function(a){ _delprato(a); salvarParaCozinha(); };
-
-const _nova = criarNovaComanda;
-criarNovaComanda = function(){ _nova(); salvarParaCozinha(); };
-
-const _salvamesa = salvarMesa;
-salvarMesa = function(a){ _salvamesa(a); salvarParaCozinha(); };
-
-// Força salvar tudo ao abrir
-salvarParaCozinha();
-
-
     </script>
 </body>
 </html>
